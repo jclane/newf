@@ -2,45 +2,53 @@
 
 import sys
 from csv import writer, reader
-from os import walk as oswalk
-from os import getcwd as osgetcwd
-from os import lstat as oslstat
-from os.path import join as path_join
-from os.path import getmtime
+from os import walk, getcwd, lstat
+from os.path import join, getmtime
+
 
 #ARGS = {arg[0]: arg[1] for arg in enumerate(sys.argv[1:])}
-
-# following needs a command line argument or it will error
-#dirs = next(oswalk(ARGS[0]))[1]
-
-def walk_dir(path=osgetcwd()):
+def walk_dir(path=getcwd()):
     data = []
-    for dir_path, dir_names, file_names in oswalk(path):
+    for dir_path, dir_names, file_names in walk(path):
         for file in file_names:
-            full_path = path_join(dir_path, file)
-            data.append({"path":full_path, "last_modified":oslstat(full_path).st_mtime})
+            full_path = join(dir_path, file)
+            data.append({"path":full_path, "last_modified":lstat(full_path).st_mtime})
 
     return data
 
-def read_dir_list(path=osgetcwd()):
-    data = []
-    with open(path_join(path, r".dir_list.csv"), "r", newline="\n") as f:
+def read_dir_list(path=getcwd()):
+    data_dict = {}
+    with open(join(path, r".dir_list.csv"), "r", newline="\n") as f:
         lines = reader(f, delimiter=",")
         next(lines)
         for line in lines:
-            data.append({line[0]: line[1]})
+            data_dict[line[0]] = line[1]
 
-    return data
+    return data_dict
 
-def csvwriter(data, path=osgetcwd()):
-    with open(path_join(path, r".dir_list.csv"), "w+", newline="\n") as f:
+def csvwriter(data, path=getcwd()):
+    with open(join(path, r".dir_list.csv"), "w+", newline="\n") as f:
         w = writer(f, delimiter=",")
         w.writerow(("path", "last_modified"))
         for line in data:
             w.writerow((line['path'], line['last_modified']))
 
+def get_changes(files_list, csv_files_list):
+    changes = []
+    for el in files_list:
+        if el["path"] in csv_files_list.keys():
+            if el["last_modified"] != csv_files_list[el["path"]]:
+                changes.append(el)
+        else:
+            print(f"File was added!: {el['path']}")
+            changes.append(el)
+
+    return changes
+
 
 FILES = walk_dir()
+FILES_CSV = read_dir_list()
+
+print(len(get_changes(FILES, FILES_CSV)))
+
 csvwriter(FILES)
-for f in read_dir_list():
-    print(f)
