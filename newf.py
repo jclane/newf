@@ -22,12 +22,13 @@ def walk_dir(path=osgetcwd()):
 
     return data
 
-def csvreader(path=osgetcwd()):
+def read_dir_list(path=osgetcwd()):
     data = []
-    with open(path_join(path, r".dir_list.csv"), "w+", newline="\n") as f:
+    with open(path_join(path, r".dir_list.csv"), "r", newline="\n") as f:
         lines = reader(f, delimiter=",")
+        next(lines)
         for line in lines:
-            data.append({"path":line[0], "last_modified":line[1]})
+            data.append({line[0]: line[1]})
 
     return data
 
@@ -40,5 +41,6 @@ def csvwriter(data, path=osgetcwd()):
 
 
 FILES = walk_dir()
-CSV_FILE = csvreader()
 csvwriter(FILES)
+for f in read_dir_list():
+    print(f)
