@@ -37,7 +37,7 @@ def get_changes(files_list, csv_files_list):
     changes = []
     for el in files_list:
         if el["path"] in csv_files_list.keys():
-            if el["last_modified"] != csv_files_list[el["path"]]:
+            if str(el["last_modified"]) != csv_files_list[el["path"]]:
                 changes.append(el)
         else:
             print(f"File was added!: {el['path']}")
@@ -48,7 +48,7 @@ def get_changes(files_list, csv_files_list):
 
 FILES = walk_dir()
 FILES_CSV = read_dir_list()
-
-print(len(get_changes(FILES, FILES_CSV)))
+changes = get_changes(FILES, FILES_CSV)
+print(len(changes))
 
 csvwriter(FILES)
