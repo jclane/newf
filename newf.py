@@ -4,7 +4,6 @@ import sys
 from csv import writer, reader
 from os import walk, getcwd, lstat
 from os.path import exists, join, getmtime
-from pprint import pprint
 
 
 ARGS = {arg[0]: arg[1] for arg in enumerate(sys.argv[1:])}
@@ -12,10 +11,12 @@ ARGS = {arg[0]: arg[1] for arg in enumerate(sys.argv[1:])}
 def walk_dir(path):
     data = {}
     for dir_path, dir_names, file_names in walk(path):
+        data[dir_path] = []
         for file in file_names:
-            full_path = join(dir_path, file)
-            data[dir_path].append({"path":full_path, "last_modified":lstat(full_path).st_mtime})
-    print(data)
+            if file != ".dir_list.csv":
+                full_path = join(dir_path, file)
+                data[dir_path].append({"file_name":file, "path":full_path, "last_modified":lstat(full_path).st_mtime})
+
     return data
 
 def read_dir_list(path):
@@ -35,20 +36,22 @@ def csvwriter(data, path):
     with open(join(path, r".dir_list.csv"), "w+", newline="\n") as f:
         w = writer(f, delimiter=",")
         w.writerow(("path", "last_modified"))
-        for line in data:
-            w.writerow((line['path'], line['last_modified']))
+        for k, v in data.items():
+            for p in v:
+                w.writerow((p['path'], p['last_modified']))
 
 def get_changes(files_list, csv_files_list):
     changes = {"added":[], "modified":[]}
-    if len(csv_files_list.keys()):
-        for el in files_list:
-            if el["path"] in csv_files_list.keys():
-                if str(el["last_modified"]) != csv_files_list[el["path"]]:
-                    changes["modified"].append(el["path"])
-            else:
-                changes["added"].append(el["path"])
+    if csv_files_list.keys():
+        for k, v in files_list.items():
+            for e in v:
+                if e["path"] in csv_files_list.keys():
+                    if str(e["last_modified"]) != csv_files_list[e["path"]]:
+                        changes["modified"].append(e["path"])
+                else:
+                    changes["added"].append(e["path"])
     else:
-        changes["added"] = [el["path"] for el in files_list]
+        changes["added"] = [e["path"] for v in files_list.values() for e in v]
 
     return changes
 
@@ -75,6 +78,6 @@ FILES = walk_dir(PATH)
 FILES_CSV = read_dir_list(PATH)
 # find the differences between the last run and this run
 changes = get_changes(FILES, FILES_CSV)
-#print_result(changes)
+print_result(changes)
 # save details of the current path to .dir_list.csv
 csvwriter(FILES, PATH)
