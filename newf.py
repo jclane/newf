@@ -4,6 +4,7 @@ import sys
 from csv import writer, reader
 from os import walk, getcwd, lstat
 from os.path import exists, join, getmtime
+from pprint import pprint
 
 
 ARGS = {arg[0]: arg[1] for arg in enumerate(sys.argv[1:])}
@@ -51,6 +52,15 @@ def get_changes(files_list, csv_files_list):
 
     return changes
 
+def print_result(changes):
+    #print("\n")
+    for k, v in changes.items():
+        print(f"{k.upper()}:\n")
+        pprint(v)
+    #    for p in v:
+    #        print(f"  {str(v)}")
+    #    print("\n")
+
 def handle_args(args):
     if args:
         return {"path":ARGS[0]}
@@ -66,5 +76,6 @@ FILES = walk_dir(PATH)
 FILES_CSV = read_dir_list(PATH)
 # find the differences between the last run and this run
 changes = get_changes(FILES, FILES_CSV)
+print_result(changes)
 # save details of the current path to .dir_list.csv
 csvwriter(FILES, PATH)
