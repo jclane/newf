@@ -53,13 +53,12 @@ def get_changes(files_list, csv_files_list):
     return changes
 
 def print_result(changes):
-    #print("\n")
+    print("\n")
     for k, v in changes.items():
         print(f"{k.upper()}:\n")
-        pprint(v)
-    #    for p in v:
-    #        print(f"  {str(v)}")
-    #    print("\n")
+        for p in v:
+            print(f"  {p}")
+        print("\n")
 
 def handle_args(args):
     if args:
