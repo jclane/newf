@@ -10,12 +10,12 @@ from pprint import pprint
 ARGS = {arg[0]: arg[1] for arg in enumerate(sys.argv[1:])}
 
 def walk_dir(path):
-    data = []
+    data = {}
     for dir_path, dir_names, file_names in walk(path):
         for file in file_names:
             full_path = join(dir_path, file)
-            data.append({"path":full_path, "last_modified":lstat(full_path).st_mtime})
-
+            data[dir_path].append({"path":full_path, "last_modified":lstat(full_path).st_mtime})
+    print(data)
     return data
 
 def read_dir_list(path):
@@ -75,6 +75,6 @@ FILES = walk_dir(PATH)
 FILES_CSV = read_dir_list(PATH)
 # find the differences between the last run and this run
 changes = get_changes(FILES, FILES_CSV)
-print_result(changes)
+#print_result(changes)
 # save details of the current path to .dir_list.csv
 csvwriter(FILES, PATH)
